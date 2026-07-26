@@ -2,6 +2,8 @@
 
 > **Multilingual Medical Report Summarizer, Voice Health Assistant & Grounded RAG Chat**
 
+![MediAssist AI Working Demo UI](frontend/public/demo_ui.png)
+
 MediAssist AI is a full-stack production-ready web application designed to parse complex diagnostic PDF medical reports (Blood Tests, CBC, MRI Scans, CT Scans, X-Rays, ECGs, Pathology) into plain-language summaries, clinical health insights, spoken audio narrations, and interactive multilingual voice/text chat grounded in patient report context.
 
 ---
