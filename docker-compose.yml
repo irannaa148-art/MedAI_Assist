@@ -1,20 +1,54 @@
 ﻿version: '3.8'
 
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: mediassist-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: mediassist
+      POSTGRES_PASSWORD: mediassist_pass
+      POSTGRES_DB: mediassist_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mediassist -d mediassist_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  chromadb:
+    image: chromadb/chroma:0.4.24
+    container_name: mediassist-chroma
+    restart: always
+    volumes:
+      - chroma_data:/chroma/chroma
+
   backend:
     build: ./backend
-    ports:
-      - "8000:8000"
+    container_name: mediassist-backend
+    restart: always
     environment:
-      - DATABASE_URL=sqlite:///./sql_app.db
+      - DATABASE_URL=postgresql://mediassist:mediassist_pass@postgres:5432/mediassist_db
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - SECRET_KEY=${SECRET_KEY:-mediassist_secret_key_2026}
-    volumes:
-      - ./backend/temp_uploads:/app/temp_uploads
+      - JWT_SECRET=${JWT_SECRET:-mediassist_secret_key_2026}
+      - CHROMA_SERVER_HOST=chromadb
+      - CHROMA_SERVER_PORT=8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
 
   frontend:
     build: ./frontend
+    container_name: mediassist-frontend
+    restart: always
     ports:
-      - "3000:80"
+      - "80:80"
     depends_on:
       - backend
+
+volumes:
+  postgres_data:
+  chroma_data:
